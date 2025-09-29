@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Books Management (JavaScript)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        h2 { color: #333; }
+        .form-group { margin-bottom: 15px; }
+        input, select, button { padding: 8px; margin-right: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background-color: #4CAF50; color: white; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; background-color: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .no-pdf { color: red; font-style: italic; }
+        .pdf-link { color: blue; text-decoration: underline; }
+        .pdf-link:hover { color: #007BFF; }
+        .error { color: red; margin-top: 10px; }
+        .Back{
+            background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    text-decoration: none;
+            margin-top: 300px;
+            margin-left: 1300px;
+            
+        }
+        .Back:hover{
+        }
+        </style>
+</head>
+<body>
+    <h2>Library Books Management System (JavaScript)</h2>
+    <p><strong>Note:</strong> Use valid public PDF URLs (e.g., from <a href="https://www.gutenberg.org/" target="_blank">Project Gutenberg</a>) for "Download PDF" to work.</p>
+
+    <!-- Add Book Form -->
+    <div class="form-group">
+        <label>Book Title:</label>
+        <input type="text" id="titleInput" placeholder="Enter book title" required>
+        <label>Author:</label>
+        <input type="text" id="authorInput" placeholder="Enter author" required>
+        <label>PDF URL (e.g., https://www.gutenberg.org/ebooks/11.pdf):</label>
+        <input type="text" id="pdfInput" placeholder="Enter PDF URL" required>
+        <label>Status:</label>
+        <select id="statusInput">
+            <option value="available">Available</option>
+            <option value="issued">Issued</option>
+        </select>
+        <button onclick="addBook()">Add Book</button>
+    </div>
+    <div id="message" class="error"></div>
+
+    <!-- Search -->
+    <div class="form-group">
+        <input type="text" id="searchInput" placeholder="Search by title or author..." onkeyup="searchBooks()">
+        <button onclick="searchBooks()">Search</button>
+        <button onclick="displayAllBooks()">Show All Books</button>
+    </div>
+
+    <!-- Books Table -->
+    <table id="booksTable">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Status</th>
+                <th>Actions</th>
+                <th>PDF</th>
+            </tr>
+        </thead>
+        <tbody id="booksBody"></tbody>
+    </table>
+    <a href="Dashbordr.html" class="Back">Back</a>
+    <script>
+        // Load books from localStorage on page load
+        let books = JSON.parse(localStorage.getItem('libraryBooks')) || [
+            { id: 1, title: 'The Lion King', author: 'Jeffrey Katzenberg, Disney, Peter Schneider', status: 'issued', pdf_path: 'https://www.gutenberg.org/ebooks/11.pdf' }, // Corrected to a valid Gutenberg PDF
+            { id: 2, title: 'Alice in Wonderland', author: 'Lewis Carroll', status: 'available', pdf_path: 'https://www.gutenberg.org/ebooks/11.pdf' } // Same valid PDF for demo
+        ];
+        localStorage.setItem('libraryBooks', JSON.stringify(books)); // Save initial data
+
+        // Display all books initially
+        displayBooks(books);
+
+        function addBook() {
+            const title = document.getElementById('titleInput').value.trim();
+            const author = document.getElementById('authorInput').value.trim();
+            const pdfPath = document.getElementById('pdfInput').value.trim();
+            const status = document.getElementById('statusInput').value;
+            const messageDiv = document.getElementById('message');
+
+            if (!title || !author || !pdfPath) {
+                messageDiv.textContent = 'Please fill all fields! PDF URL is required.';
+                return;
+            }
+
+            // Simple URL validation
+            if (!pdfPath.match(/^https?:\/\//)) {
+                messageDiv.textContent = 'Please enter a valid URL starting with http:// or https://';
+                return;
+            }
+
+            const newBook = {
+                id: Date.now(), // Unique ID
+                title,
+                author,
+                status,
+                pdf_path: pdfPath
+            };
+
+            books.push(newBook);
+            localStorage.setItem('libraryBooks', JSON.stringify(books));
+            displayBooks(books);
+            clearForm();
+            messageDiv.textContent = 'Book added successfully!';
+            setTimeout(() => messageDiv.textContent = '', 3000); // Clear message after 3 seconds
+        }
+
+        function searchBooks() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const messageDiv = document.getElementById('message');
+            if (!searchTerm) {
+                displayAllBooks();
+                return;
+            }
+
+            const results = books.filter(book =>
+                book.title.toLowerCase().includes(searchTerm) || book.author.toLowerCase().includes(searchTerm)
+            );
+            if (results.length === 0) {
+                messageDiv.textContent = 'No books found for "' + searchTerm + '".';
+                displayBooks([]);
+            } else {
+                messageDiv.textContent = '';
+                displayBooks(results);
+            }
+        }
+
+        function displayAllBooks() {
+            displayBooks(books);
+            document.getElementById('message').textContent = '';
+        }
+
+        function displayBooks(bookList) {
+            const tbody = document.getElementById('booksBody');
+            tbody.innerHTML = '';
+
+            if (bookList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No books found.</td></tr>';
+                return;
+            }
+
+            bookList.forEach(book => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${book.title}</td>
+                    <td>${book.author}</td>
+                    <td>${book.status}</td>
+                    <td>
+                        <button onclick="editBook(${book.id})">Edit</button>
+                        <button onclick="deleteBook(${book.id})" style="background-color: #f44336;">Delete</button>
+                    </td>
+                    <td>
+                        <a href="${book.pdf_path}" target="_blank" class="pdf-link">Download PDF</a>
+                    </td>
+                `;
+            });
+        }
+
+        function editBook(id) {
+            const book = books.find(b => b.id === id);
+            if (!book) return;
+
+            const newTitle = prompt('Edit Title:', book.title);
+            const newAuthor = prompt('Edit Author:', book.author);
+            const newPdf = prompt('Edit PDF URL:', book.pdf_path);
+            const newStatus = prompt('Edit Status (available/issued):', book.status);
+
+            if (newTitle && newAuthor && newPdf && (newStatus === 'available' || newStatus === 'issued')) {
+                if (!newPdf.match(/^https?:\/\//)) {
+                    alert('Please enter a valid URL starting with http:// or https://');
+                    return;
+                }
+                book.title = newTitle;
+                book.author = newAuthor;
+                book.pdf_path = newPdf;
+                book.status = newStatus;
+                localStorage.setItem('libraryBooks', JSON.stringify(books));
+                displayBooks(books);
+                document.getElementById('message').textContent = 'Book updated successfully!';
+                setTimeout(() => document.getElementById('message').textContent = '', 3000);
+            } else {
+                alert('Invalid input! Status must be "available" or "issued", and a valid URL is required.');
+            }
+        }
+
+        function deleteBook(id) {
+            if (confirm('Are you sure you want to delete this book?')) {
+                books = books.filter(b => b.id !== id);
+                localStorage.setItem('libraryBooks', JSON.stringify(books));
+                displayBooks(books);
+                document.getElementById('message').textContent = 'Book deleted successfully!';
+                setTimeout(() => document.getElementById('message').textContent = '', 3000);
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('titleInput').value = '';
+            document.getElementById('authorInput').value = '';
+            document.getElementById('pdfInput').value = '';
+            document.getElementById('statusInput').value = 'available';
+        }
+    </script>
+</body>
+</html>

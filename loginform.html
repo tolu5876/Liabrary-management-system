@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins",sans-serif;
+            overflow: hidden;
+        }
+
+        body{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            width: 100%;
+             background-image: url(istockphoto-949118068-1024x1024.webp);
+           backdrop-filter: blur(3px);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        /* body::before{
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 100%;
+        } */
+        
+        .login-wrapper {
+            width: 400px;
+            padding: 30px;
+            border: 1px solid #ffffff80;
+            border-radius: 8px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            background-color: #118175;
+        }
+
+        form{
+            display: flex;
+            flex-direction: column;
+        }
+
+        form.h2{
+            font-size: 2rem;
+            color: #7b8282;
+            margin-bottom: 20px;
+        }
+
+        .input-field{
+            position: relative;
+            margin: 15px 0;
+            border-bottom: 2px solid #053631;
+        }
+
+        .input-field input{
+            width: 100%;
+            height: 40px;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #000000;
+            font-size: 1rem;
+        }
+
+        .input-field label {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            color: #053631;
+            font-size: 1rem;
+            pointer-events: none;
+            transition: 0.3s ease;
+        }
+
+        .password-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 25px 0 35px 0;
+            color: #fffcfc80;
+        }
+
+        .password-options label{
+            display: flex;
+            align-items: center;
+        }
+
+        #remember {
+            accent-color: #09a3f1;
+        }
+        .password-options label p{
+            margin-left: 8px;
+        }
+        .login-wrapper a{
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .login-wrapper a:hover {
+            text-decoration: underline;
+        }
+
+        button{
+            background: #fcfcfc;
+            color: #053631;
+            font-size: 1rem;
+            font-weight: 600;
+            padding:  12px 20px;
+            border-radius: 3px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: 0.3s ease;
+            user-select: none;
+            outline: none;
+            -webkit-top-highlight-color: transparent
+        }
+
+        button:hover {
+            background: #053631;
+            color: #ffffff;
+            border-color: #053631;
+        }
+
+        .account-options{
+            text-align: center;
+            margin-top: 30px;
+            color: #ffffff;
+        }
+        .account_options p{
+            color: #fcfcfc;
+        }
+        .red{
+            color: red;
+            cursor: pointer;
+        }
+        .back{
+            background-color: #09a3f1;
+            /* padding: 4px 70px; */
+        }
+        .back:hover{
+            background-color: #30a6e1;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <form method="#">
+            <h2><b>Admin Login</b></h2>
+            <div class="input-field">
+                <input type="email" required placeholder="Enter your email" class="email">
+                
+            </div>
+            <div class="input-field">
+                <input type="password" placeholder="Enter your password" class="password">
+               
+            </div>
+            <div class="password-options">
+                <label for="remember">
+                    <input type="checkbox" id="remember">
+                    <p>Remember me</p>
+                </label>
+                <a href="forgot.html">Forgot password</a>
+            </div>
+            <button type="submit">Login</button>
+            <div class="account-options">
+                <p >Dont't have an account <span><a href="Registration.html">Register</a></span></p>
+                <button class="back"><a href="index.html">Back</a></button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let form = document.querySelector("form")
+        let email = document.querySelector(".email")
+        let password = document.querySelector(".password")
+
+        let userData = JSON.parse(localStorage.getItem("userInfo"));
+        console.log(userData.email); 
+
+
+        form.addEventListener("submit", function(e){
+            e.preventDefault();
+
+            if(email.value === "admin@gmail.com" && password.value === "1234"){
+                 alert("YOU ARE ADMIN👋");
+                window.location.href="Dashbordr.html"
+            }
+             
+            else if(
+                email.value !== userData.email &&
+                password.value !== userData.password
+            )
+                  {
+                alert("User info is incorrect!");
+            }
+          
+            // else{
+            //     alert("Good!,you can now proceed to Dashboard");
+            //     window.location.href="index.html"
+            // }
+        });
+    </script>
+</body>
+</html>

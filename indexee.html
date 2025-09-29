@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Dashboard - Library</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { display: flex; background: #f4f6f8; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #2c3e50;
+      height: 100vh;
+      padding: 20px 0;
+      color: white;
+      position: fixed;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .sidebar a {
+      display: block;
+      color: white;
+      padding: 40px 20px;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+    .sidebar a:hover {
+      background: #79bcff;
+    }
+
+    /* Main Content */
+    .main {
+      margin-left: 220px;
+      padding: 20px;
+      width: 100%;
+      background-color: #5e92c6;
+      height: 110px;
+    }
+    .header {
+      margin-bottom: 20px;
+    }
+    .header h1 { 
+      color: #ffffff;
+     }
+
+    .content {
+            padding: 20px;
+            background-color: #53d553;
+            border-radius: 20px;
+            height: 500px;
+        }
+
+        .content:hover{
+             transform: scale(1.0);
+              transition: 1s;
+        }
+
+    /* Search bar */
+    .search-bar {
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      padding: 10px;
+      width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      outline: none;
+    }
+    .search-bar button {
+      padding: 10px 15px;
+      border: none;
+      background: #27ae60;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 14px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      font-size: 1em;
+    }
+    th { background: #27ae60; color: white; }
+    tr:hover { background: #f9f9f9; }
+    .pdf-link {
+      color: #2980b9;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>📚 BookHive</h2>
+    <a href="#">🏠 Dashboard</a>
+    <a href="student resgital.html">🚪 Logout</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <div class="header">
+      <h1>Student Dashboard</h1>
+     <h2><marquee behavior="slide" direction="left">You are welcome<span class="username"></span>👋</marquee></h2>
+    </div>
+
+    <div class="content">
+    <!-- Search Bar -->
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Search for a book...">
+  <button onclick="searchBook()">Search</button>
+</div>
+
+<!-- Counter -->
+<p id="bookCount" style="font-weight:bold; margin:10px 0; color:#2c3e50;"></p>
+
+<!-- Books Table -->
+<table>
+  <thead>
+    <tr>
+      <th>Book Title</th>
+      <th>Author</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="bookTable"></tbody>
+</table>
+
+<!-- Embedded PDF/Book Viewer -->
+<iframe id="pdfViewer" style="width:100%; height:500px; margin-top:20px; border:1px solid #ccc; display:none;"></iframe>
+  </div>
+
+ <script>
+
+   let username = document.querySelector(".username")
+          let userData = JSON.parse(localStorage.getItem("userInfo"));
+          let fullname = userData.fullname;
+
+          username.innerText = fullname;
+          console.log(userData.fullname)
+          
+  async function searchBook() {
+    const query = document.getElementById("searchInput").value;
+    const bookCount = document.getElementById("bookCount");
+    if (!query) return alert("Please enter a book name!");
+
+    // fetching book data from openlibrary Api
+
+    const url = `https://openlibrary.org/search.json?title=${encodeURIComponent(query)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+      // Resetting the table and pdf viewer
+    const table = document.getElementById("bookTable");
+    const pdfViewer = document.getElementById("pdfViewer");
+    table.innerHTML = "";
+    pdfViewer.style.display = "none"; // Hide until opened
+  
+    // handling "No Results"
+    if (!data.docs || data.docs.length === 0) {
+      bookCount.textContent = "0 books found";
+      table.innerHTML = "<tr><td colspan='3'>No results found</td></tr>";
+      return;
+    }
+
+    // Show counter
+    bookCount.textContent =`${data.docs.slice(0, 5).length} books found`;
+
+    data.docs.slice(0, 5).forEach(book => {
+      let title = book.title || "Unknown";
+      let author = (book.author_name && book.author_name[0]) || "Unknown";
+      let action = "<span style='color:gray;'>No PDF</span>";
+
+      // If OpenLibrary has an online readable copy
+      if (book.ia && book.ia.length > 0) {
+        const archiveId = book.ia[0];
+        const readUrl = `https://archive.org/embed/${archiveId}`;
+        const downloadUrl = `https://archive.org/download/${archiveId}/${archiveId}.pdf`;
+
+        action = `
+          <button onclick="openBook('${readUrl}')">📖 Read</button>
+          <a href="${downloadUrl}" target="_blank" download>
+            <button>⬇ Download</button>
+          </a>
+        `;
+      }
+
+      const row = `
+        <tr>
+          <td>${title}</td>
+          <td>${author}</td>
+          <td>${action}</td>
+        </tr>
+      `;
+      table.innerHTML += row;
+    });
+  }
+ 
+  // opening book in pdf viewer
+  function openBook(url) {
+    const pdfViewer = document.getElementById("pdfViewer");
+    pdfViewer.src = url;
+    pdfViewer.style.display = "block";
+  }
+</script>
+</body>
+</html>

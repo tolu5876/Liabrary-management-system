@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Member Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+    }
+    button.add {
+       background: #27ae60; 
+      color: white;
+     }
+    button.edit {
+       background: #2980b9;
+      color: white;
+     }
+    button.delete { 
+      background: #e74c3c;
+       color: white;
+       }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background: #f9f9f9;
+    }
+    .fine {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>👥 Member Management</h1>
+  <div class="container">
+    <form id="memberForm">
+      <input type="text" id="name" placeholder="Member Name" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="number" id="books" placeholder="Books Issued" min="0" value="0">
+      <input type="date" id="dueDate" placeholder="Due Date">
+      <button type="submit" class="add">➕ Add Member</button>
+    </form>
+
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Books Issued</th>
+          <th>Due Date</th>
+          <th>Fine</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="memberTable">
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    let members = JSON.parse(localStorage.getItem("members")) || [];
+
+    function renderMembers() {
+      const tbody = document.getElementById("memberTable");
+      tbody.innerHTML = "";
+
+      members.forEach((member, index) => {
+        let fine = 0;
+        if (member.dueDate && new Date(member.dueDate) < new Date()) {
+          const diffDays = Math.floor((new Date() - new Date(member.dueDate)) / (1000 * 60 * 60 * 24));
+          fine = diffDays * 10; 
+        }
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${member.name}</td>
+          <td>${member.email}</td>
+          <td>${member.books}</td>
+          <td>${member.dueDate || "-"}</td>
+          <td class="${fine > 0 ? "fine" : ""}">${fine > 0 ? "₹" + fine : "-"}</td>
+          <td>
+            <button class="edit" onclick="editMember(${index})">✏ Edit</button>
+            <br>.
+            <button class="delete" onclick="deleteMember(${index})">❌ Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      localStorage.setItem("members", JSON.stringify(members));
+    }
+
+    document.getElementById("memberForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const books = document.getElementById("books").value;
+      const dueDate = document.getElementById("dueDate").value;
+
+      members.push({ name, email, books, dueDate });
+      renderMembers();
+
+      this.reset();
+    });
+
+    function editMember(index) {
+      const member = members[index];
+      document.getElementById("name").value = member.name;
+      document.getElementById("email").value = member.email;
+      document.getElementById("books").value = member.books;
+      document.getElementById("dueDate").value = member.dueDate;
+
+      deleteMember(index);
+    }
+
+    function deleteMember(index) {
+      members.splice(index, 1);
+      renderMembers();
+    }
+
+    renderMembers();
+  </script>
+
+</body>
+</html>

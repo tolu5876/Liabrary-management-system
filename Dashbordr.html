@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Library Management Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      display: flex;
+      background: #f4f6f9;
+    }
+    .sidebar {
+      width: 220px;
+      background: #5292d3;
+      color: white;
+      min-height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .sidebar a {
+      display: block;
+      padding: 12px;
+      margin: 8px 0;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+    }
+    .sidebar a:hover {
+      background: #d50d0d;
+    }
+
+    .sidebar a:active{      background-color: #34495e;
+      color: #fff;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .Logout{
+      margin-top: 200px;
+      padding: 5px 10px 5px 10px;
+      border-radius: 5px;
+      border: none;
+      background-color: #517394;
+      color: #fff;
+      cursor: pointer;
+      
+    }
+
+    .Logout:hover{
+       background-color: #5784b1;
+    }
+     
+
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      margin: 0;
+    }
+
+    /* Cards */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .card:hover { 
+      transform: scale(1.03);
+     }
+    .card h3 {
+       margin: 0;
+        font-size: 1.1em;
+         color: #555; 
+      }
+    .card p { 
+      font-size: 2em;
+       margin: 8px 0 0;
+        color: #222;
+       }
+     
+    .card a{
+      text-decoration: none;
+      color: black;
+    }
+    .actions button {
+      display: block;
+      width: 100%;
+      margin: 8px 0;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .actions button.add { background: #27ae60; color: white; }
+    .actions button.issue { background: #2980b9; color: white; }
+    .actions button.return { background: #e67e22; color: white; }
+    .actions button:hover { opacity: 0.9; }
+
+    /* Transactions */
+    .transactions {
+      margin-top: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th { background: #f9f9f9; }
+    .issued { color: green; font-weight: bold; }
+    .returned { color: blue; font-weight: bold; }
+
+    .chart-container {
+      margin-top: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+    }
+    
+  </style>
+</head>
+<body>
+
+   
+  <div class="sidebar">
+    <h2>📚 Library</h2>
+    <a href="dashbord.html">Dashboard</a>
+    <a href="book.html">Books</a>
+    <a href="Member Management.html">Members</a>
+   <button class="Logout"><a href="loginform.html">Logout</button></a>
+   </div>
+     
+   <div class="main">
+    <div class="header">
+      <h1>Library dashboard</h1>
+      <h2><marquee behavior="slide" direction="left">You are welcome  <span>Admin</span>👋</marquee></h2>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3>Books</h3>
+        <p id="books-count">1240</p>
+      </div>
+      <div class="card">
+        <h3>Members</h3>
+        <p id="members-count"><a href="Member Management.html">320</p></a>
+      </div>
+      <div class="card">
+        <h3>Issued</h3>
+        <p id="issued-count">450</p>
+      </div>
+      <div class="card actions">
+        <h3>Quick Actions</h3>
+        <button class="add" onclick="addBook()">➕ Add Book</button>
+        <button class="issue" onclick="issueBook()">📖 Issue Book</button>
+        <button class="return" onclick="returnBook()">↩ Return Book</button>
+      </div>
+    </div>
+
+    <div class="transactions">
+      <h3>Recent Transactions</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Book</th>
+            <th>Action</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="transactions-body">
+          <tr>
+            <td>John Doe</td>
+            <td>The Great Gatsby</td>
+            <td class="issued">Issued</td>
+            <td>2025-09-12</td>
+          </tr>
+          <tr>
+            <td>Jane Smith</td>
+            <td>1984</td>
+            <td class="returned">Returned</td>
+            <td>2025-09-10</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="chart-container">
+      <h3>Issued Books Trend</h3>
+    </div>
+  </div>
+
+  <script>
+     let username = document.querySelector(".username")
+          let userData = JSON.parse(localStorage.getItem("userInfo"));
+          let fullname = userData.fullname;
+
+          username.innerText = fullname;
+          console.log(userData.fullname)
+
+    function addBook() {
+      let count = document.getElementById("books-count");
+      count.textContent = parseInt(count.textContent) + 1;
+      alert("New book added!");
+    }
+    function issueBook() {
+      let issued = document.getElementById("issued-count");
+      issued.textContent = parseInt(issued.textContent) + 1;
+      addTransaction("Alice Brown", "Pride and Prejudice", "Issued");
+    }
+    function returnBook() {
+      let issued = document.getElementById("issued-count");
+      issued.textContent = parseInt(issued.textContent) - 1;
+      addTransaction("Mark Lee", "Moby Dick", "Returned");
+    }
+    function addTransaction(member, book, action) {
+      const tbody = document.getElementById("transactions-body");
+      const row = document.createElement("tr");
+      const date = new Date().toISOString().split("T")[0];
+      row.innerHTML = `
+        <td>${member}</td>
+        <td>${book}</td>
+        <td class="${action === 'Issued' ? 'issued' : 'returned'}">${action}</td>
+        <td>${date}</td>
+      `;
+      tbody.prepend(row);
+    }
+  </script>
+ 
+
+</body>
+</html>
